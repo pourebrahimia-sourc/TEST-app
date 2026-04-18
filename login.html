@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Club Minimal - Login</title>
+  <style>
+    body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif;padding:24px}
+    .wrap{max-width:420px;margin:0 auto}.card{background:#1a1a1a;border:1px solid #2b2b2b;border-radius:16px;padding:18px}
+    input{width:100%;height:46px;background:#111;border:1px solid #2b2b2b;color:#fff;border-radius:12px;padding:0 12px;margin-bottom:10px;box-sizing:border-box}
+    button{width:100%;height:46px;border:none;border-radius:12px;background:#ff4fa3;color:#fff;cursor:pointer;font-weight:700;margin-top:8px}
+    .dark{background:#2a2a2a;border:1px solid #3a3a3a}.mode{display:flex;gap:10px}.mode button{margin-top:0}.status{min-height:20px;font-size:13px;opacity:.8;margin-top:10px}
+  </style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+  <div class="mode">
+    <button id="loginBtn" onclick="setMode('login')">Login</button>
+    <button id="signupBtn" class="dark" onclick="setMode('signup')">Sign Up</button>
+  </div>
+  <h2 id="title">Login</h2>
+  <input id="email" type="email" placeholder="Email">
+  <input id="name" type="text" placeholder="Name" style="display:none;">
+  <input id="password" type="password" placeholder="Password">
+  <input id="confirm" type="password" placeholder="Repeat Password" style="display:none;">
+  <button onclick="submitAuth()" id="mainBtn">Login</button>
+  <button class="dark" onclick="googleLogin()">Google</button>
+  <button class="dark" onclick="back()">Back</button>
+  <div class="status" id="status"></div>
+</div></div>
+<script>
+let mode='login';
+function setStatus(t){ document.getElementById('status').textContent=t||''; }
+function getReturnTo(){ return localStorage.getItem('loginReturnTo')==='result.html'?'result.html':'index.html'; }
+function redirectAfterAuth(){ const r=getReturnTo(); localStorage.removeItem('loginReturnTo'); window.location.href=r; }
+function saveAuth(data){ if(data?.session?.access_token) localStorage.setItem('accessToken',data.session.access_token); if(data?.session?.refresh_token) localStorage.setItem('refreshToken',data.session.refresh_token); if(data?.user?.id) localStorage.setItem('userId',data.user.id); localStorage.setItem('userEmail',data?.user?.email||''); localStorage.setItem('userName',data?.user?.user_metadata?.name||'User'); }
+function setMode(next){ mode=next; document.getElementById('title').textContent=next==='login'?'Login':'Sign Up'; document.getElementById('name').style.display=next==='signup'?'block':'none'; document.getElementById('confirm').style.display=next==='signup'?'block':'none'; document.getElementById('mainBtn').textContent=next==='login'?'Login':'Create Account'; document.getElementById('loginBtn').className=next==='login'?'':'dark'; document.getElementById('signupBtn').className=next==='signup'?'':'dark'; setStatus(''); }
+async function submitAuth(){ if(mode==='login') return login(); return signup(); }
+async function login(){ const email=document.getElementById('email').value.trim(); const password=document.getElementById('password').value.trim(); if(!email||!password){ setStatus('Enter email and password'); return; } setStatus('Logging in...'); const res=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'login',email,password})}); const data=await res.json(); if(data.error){ setStatus(data.error); return; } saveAuth(data); redirectAfterAuth(); }
+async function signup(){ const email=document.getElementById('email').value.trim(); const password=document.getElementById('password').value.trim(); const confirm=document.getElementById('confirm').value.trim(); const name=document.getElementById('name').value.trim(); if(!email||!password||!confirm||!name){ setStatus('Fill all fields'); return; } if(password!==confirm){ setStatus('Passwords do not match'); return; } setStatus('Creating account...'); const res=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'signup',email,password,name})}); const data=await res.json(); if(data.error){ setStatus(data.error); return; } if(!data.session?.access_token){ setStatus('Account created. Please verify email, then log in.'); setMode('login'); return; } saveAuth(data); redirectAfterAuth(); }
+async function googleLogin(){ setStatus('Redirecting to Google...'); const res=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'google'})}); const data=await res.json(); if(data.error){ setStatus(data.error); return; } window.location.href=data.url; }
+function back(){ const r=getReturnTo(); localStorage.removeItem('loginReturnTo'); window.location.href=r; }
+setMode('login');
+</script>
+</body>
+</html>
