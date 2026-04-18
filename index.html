@@ -1,57 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Club Minimal - Index</title>
+  <title>AI Club - Index</title>
   <style>
-    body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif;padding:24px}
-    .wrap{max-width:420px;margin:0 auto}
-    .card{background:#1a1a1a;border:1px solid #2b2b2b;border-radius:16px;padding:18px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    button{padding:12px 14px;border:none;border-radius:12px;background:#ff4fa3;color:#fff;cursor:pointer;font-weight:700}
-    .dark{background:#2a2a2a;border:1px solid #3a3a3a}
-    .muted{opacity:.75;font-size:14px}
+    body{margin:0;background:#111;color:#fff;font-family:Arial,Helvetica,sans-serif;padding:24px;max-width:420px;margin-inline:auto}
+    .card{background:#1a1a1a;border:1px solid #2b2b2b;border-radius:18px;padding:20px}
+    .btn{width:100%;height:48px;border:none;border-radius:14px;margin-top:10px;background:#ff4fa3;color:#fff;font-weight:700;cursor:pointer}
+    .btn.dark{background:#2a2a2a;border:1px solid #3a3a3a}
+    .muted{opacity:.75;font-size:13px}
   </style>
 </head>
 <body>
-<div class="wrap">
   <div class="card">
-    <h2>Index</h2>
-    <div class="muted">Minimal redirect test</div>
-    <div id="status" class="muted" style="margin-top:10px;">Checking session...</div>
-    <div class="row">
-      <button onclick="goLogin('index.html')">Login</button>
-      <button class="dark" onclick="goResult()">Result</button>
-      <button class="dark" onclick="goAge()">Age</button>
-    </div>
-    <div class="row">
-      <button class="dark" onclick="goGift()">Gift</button>
-      <button class="dark" onclick="goSubscribe()">Subscribe</button>
-      <button class="dark" onclick="logout()">Logout</button>
-    </div>
+    <h2 style="margin-top:0">AI Club Minimal</h2>
+    <p class="muted">Index page</p>
+    <button class="btn" onclick="goLogin()">Login</button>
+    <button class="btn dark" onclick="goAge()">Create Character</button>
+    <button class="btn dark" onclick="goGift()">Gift</button>
+    <button class="btn dark" onclick="goSubscribe()">Subscribe</button>
+    <button class="btn dark" onclick="goResult()">Result</button>
+    <div id="status" class="muted" style="margin-top:12px"></div>
   </div>
-</div>
 <script>
 function getAccessToken(){ return localStorage.getItem('accessToken') || ''; }
-function authHeaders(extra={}){ const t=getAccessToken(); return t?{...extra,Authorization:'Bearer '+t}:extra; }
-function setReturnTo(page){ localStorage.setItem('loginReturnTo', page); }
-function goLogin(page){ setReturnTo(page); window.location.href='login.html'; }
-function goResult(){ window.location.href='result.html'; }
-function goAge(){ localStorage.setItem('funnelFrom','index'); window.location.href='age.html'; }
-function goGift(){ if(getAccessToken()){ window.location.href='gift.html'; } else { goLogin('index.html'); } }
-function goSubscribe(){ if(getAccessToken()){ window.location.href='subscribe.html'; } else { goLogin('index.html'); } }
-function logout(){ ['accessToken','refreshToken','userId','userEmail','userName','loginReturnTo'].forEach(k=>localStorage.removeItem(k)); location.reload(); }
-async function check(){
-  const s=document.getElementById('status');
-  if(!getAccessToken()){ s.textContent='Logged out'; return; }
+async function refreshStatus(){
+  const status = document.getElementById('status');
+  if(!getAccessToken()){ status.textContent = 'Logged out'; return; }
   try{
-    const res=await fetch('/api/session',{headers:authHeaders()});
-    const json=await res.json();
-    const session=json?.data?.session;
-    s.textContent=session?.user?`Logged in as ${session.user.email}`:'Token found but no session';
-  }catch(e){ s.textContent='Session check failed'; }
+    const res = await fetch('/api/session',{headers:{Authorization:'Bearer '+getAccessToken()}});
+    const json = await res.json();
+    const user = json?.data?.session?.user;
+    status.textContent = user ? 'Logged in as ' + (user.email || 'user') : 'Logged out';
+  }catch(e){ status.textContent = 'Logged out'; }
 }
-check();
+function goLogin(){ localStorage.setItem('loginReturnTo','index.html'); window.location.href='login.html'; }
+function goAge(){ localStorage.setItem('funnelFrom','index'); window.location.href='age.html'; }
+function goGift(){ localStorage.setItem('loginReturnTo','gift.html'); window.location.href='gift.html'; }
+function goSubscribe(){ localStorage.setItem('loginReturnTo','subscribe.html'); window.location.href='subscribe.html'; }
+function goResult(){ window.location.href='result.html'; }
+document.addEventListener('DOMContentLoaded', refreshStatus);
 </script>
 </body>
 </html>

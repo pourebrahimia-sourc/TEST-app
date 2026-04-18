@@ -1,2 +1,26 @@
 <!DOCTYPE html>
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>AI Club Minimal - Age</title><style>body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif;padding:24px}.wrap{max-width:420px;margin:0 auto}.card{background:#1a1a1a;border:1px solid #2b2b2b;border-radius:16px;padding:18px}button{padding:12px 14px;border:none;border-radius:12px;background:#ff4fa3;color:#fff;cursor:pointer;font-weight:700;margin-right:8px;margin-top:10px}</style></head><body><div class="wrap"><div class="card"><h2>Age</h2><div>Back follows <code>funnelFrom</code>.</div><button onclick="goBack()">Back</button></div></div><script>function goBack(){ const from=localStorage.getItem('funnelFrom'); window.location.href = from==='result' ? 'result.html' : 'index.html'; }</script></body></html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Club - Age</title>
+  <style>
+    body{margin:0;background:#111;color:#fff;font-family:Arial,Helvetica,sans-serif;padding:24px;max-width:420px;margin-inline:auto}
+    .card{background:#1a1a1a;border:1px solid #2b2b2b;border-radius:18px;padding:20px}
+    .btn{width:100%;height:48px;border:none;border-radius:14px;margin-top:10px;background:#ff4fa3;color:#fff;font-weight:700;cursor:pointer}
+    .btn.dark{background:#2a2a2a;border:1px solid #3a3a3a}
+  </style>
+</head>
+<body>
+<div class="card">
+  <h2 style="margin-top:0">Age</h2>
+  <button class="btn" onclick="selectAge('18-21')">18-21</button>
+  <button class="btn dark" onclick="selectAge('22-25')">22-25</button>
+  <button class="btn dark" onclick="goBack()">Back</button>
+</div>
+<script>
+function selectAge(value){ localStorage.setItem('age', value); window.location.href = 'result.html'; }
+function goBack(){ const from = localStorage.getItem('funnelFrom'); window.location.href = from === 'result' ? 'result.html' : 'index.html'; }
+</script>
+</body>
+</html>
